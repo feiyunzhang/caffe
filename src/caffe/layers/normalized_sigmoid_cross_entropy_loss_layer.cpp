@@ -38,12 +38,12 @@ void NormalizedSigmoidCrossEntropyLossLayer<Dtype>::Forward_cpu(
   const int count = bottom[0]->count();
   const int num = bottom[0]->num();
   const int dim = count / num;
-
+  
   // Stable version of loss computation from input data
   const Dtype* input_data = bottom[0]->cpu_data();
   const Dtype* target = bottom[1]->cpu_data();
   Dtype loss = 0;
-
+  
   for (int i = 0; i < dim; ++i) {
     int n_pos = 0;
     int n_neg = 0;

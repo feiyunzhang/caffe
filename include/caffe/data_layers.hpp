@@ -175,10 +175,10 @@ class SamplingVectorLabelDataLayer : public BasePrefetchingDataLayer<Dtype> {
   // LEVELDB
   shared_ptr<leveldb::DB> db_;
   shared_ptr<leveldb::Iterator> iter_;
-
+  
   // Sampling pool
   vector<vector<std::string> >sampling_pool;
-
+  
   // Sampling indices
   int minIdx_;
   int maxIdx_;

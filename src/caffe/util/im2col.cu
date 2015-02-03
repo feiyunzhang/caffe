@@ -65,7 +65,7 @@ void im2col_sk_gpu(const Dtype* data_im, const int channels,
                              CAFFE_CUDA_NUM_THREADS>>>(
       num_kernels, data_im, height, width, kernel_h, kernel_w,
       ext_kernel_h, ext_kernel_w, pad_h, pad_w, stride_h, stride_w, kstride_h, kstride_w,
-      height_col, width_col,
+      height_col, width_col, 
       data_col);
   CUDA_POST_KERNEL_CHECK;
 }

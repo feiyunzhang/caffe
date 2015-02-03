@@ -34,7 +34,7 @@ template <typename Dtype>
      }
    }
  }
-
+ 
  // Explicit instantiation
  template void im2col_sk_cpu<float>(const float* data_im, const int channels,
      const int height, const int width, const int kernel_h, const int kernel_w,

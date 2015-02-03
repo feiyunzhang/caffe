@@ -88,7 +88,7 @@ void SamplingVectorLabelDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype
   this->datum_height_ = datum.height();
   this->datum_width_ = datum.width();
   this->datum_size_ = datum.channels() * datum.height() * datum.width();
-
+  
   // setup sampling pools
   std::ifstream pool_file(this->layer_param_.sampling_param().pool_file().c_str());
   LOG(INFO) << "Opening pool file " << this->layer_param_.sampling_param().pool_file();
@@ -164,7 +164,7 @@ void SamplingVectorLabelDataLayer<Dtype>::InternalThreadEntry() {
     leveldb::Status s = db_->Get(leveldb::ReadOptions(), key, &value);
     CHECK(s.ok()) << "Failed to find value for key: " << key;
     datum.ParseFromString(value);
-
+    
     int label_size = std::max(datum.multi_label_size(), datum.multi_float_label_size());
     // Apply data transformations (mirror, scale, crop...)
     this->data_transformer_.Transform(item_id, datum, this->mean_, top_data);

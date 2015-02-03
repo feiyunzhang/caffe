@@ -84,7 +84,7 @@ void PoolingSKLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       height_ + 2 * pad_h_ - ext_kernel_h) / stride_h_)) + 1;
   pooled_width_ = static_cast<int>(ceil(static_cast<float>(
       width_ + 2 * pad_w_ - ext_kernel_w) / stride_w_)) + 1;
-
+  
   (*top)[0]->Reshape(bottom[0]->num(), channels_, pooled_height_,
       pooled_width_);
   if (top->size() > 1) {

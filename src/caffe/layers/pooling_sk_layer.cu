@@ -13,7 +13,7 @@ __global__ void MaxPoolForward(const int nthreads, const Dtype* bottom_data,
     const int num, const int channels, const int height,
     const int width, const int pooled_height, const int pooled_width,
     const int kernel_h, const int kernel_w, const int ext_kernel_h, const int ext_kernel_w,
-    const int stride_h, const int stride_w, const int kstride_h, const int kstride_w,
+    const int stride_h, const int stride_w, const int kstride_h, const int kstride_w, 
     const int pad_h, const int pad_w, Dtype* top_data,
     int* mask, Dtype* top_mask) {
   CUDA_KERNEL_LOOP(index, nthreads) {
@@ -180,7 +180,7 @@ void PoolingSKLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     MaxPoolForward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, bottom_data, bottom[0]->num(), channels_,
         height_, width_, pooled_height_, pooled_width_, kernel_h_,
-        kernel_w_, ext_kernel_h, ext_kernel_w,
+        kernel_w_, ext_kernel_h, ext_kernel_w, 
         stride_h_, stride_w_, kstride_h_, kstride_w_,
         pad_h_, pad_w_, top_data,
         mask, top_mask);
@@ -190,7 +190,7 @@ void PoolingSKLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     AvePoolForward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, bottom_data, bottom[0]->num(), channels_,
         height_, width_, pooled_height_, pooled_width_, kernel_h_,
-        kernel_w_, ext_kernel_h, ext_kernel_w,
+        kernel_w_, ext_kernel_h, ext_kernel_w, 
         stride_h_, stride_w_, kstride_h_, kstride_w_,
         pad_h_, pad_w_, top_data);
     break;

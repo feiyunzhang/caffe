@@ -19,7 +19,7 @@ void ConvolutionSKLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     int weight_offset = M_ * K_;
     int col_offset = K_ * N_;
     int top_offset = M_ * N_;
-
+    
     for (int n = 0; n < num_; ++n) {
        // First, im2col
        im2col_sk_gpu(bottom_data + bottom[i]->offset(n), channels_, height_,
@@ -31,7 +31,7 @@ void ConvolutionSKLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
          caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, M_, N_, K_,
            (Dtype)1., weight + weight_offset * g, col_data + col_offset * g,
            (Dtype)0., top_data + (*top)[i]->offset(n) + top_offset * g);
-       }
+       } 
        // third, add bias
        if (bias_term_) {
          caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num_output_,
@@ -47,7 +47,7 @@ void ConvolutionSKLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void ConvolutionSKLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom) {
-   LOG(FATAL) << "Backward_gpu() not implemented for ConvolutionSKLayer";
+   LOG(FATAL) << "Backward_gpu() not implemented for ConvolutionSKLayer";  
 }
 
 
