@@ -209,6 +209,13 @@ class MapDataLayer : public BasePrefetchingDataLayer<Dtype> {
   // LEVELDB
   shared_ptr<leveldb::DB> db_;
   shared_ptr<leveldb::Iterator> iter_;
+  // LMDB
+  MDB_env* mdb_env_;
+  MDB_dbi mdb_dbi_;
+  MDB_txn* mdb_txn_;
+  MDB_cursor* mdb_cursor_;
+  MDB_val mdb_key_, mdb_value_;
+  
   const Dtype* label_mean_;
 
  private:

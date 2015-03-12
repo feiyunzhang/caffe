@@ -72,6 +72,61 @@ class MapDataLayerTest : public MultiDeviceTest<TypeParam> {
     delete db;
   }
 
+  void FillLMDB(const bool unique_pixels) {
+    backend_ = DataParameter_DB_LMDB;
+    LOG(INFO) << "Using temporary lmdb " << *filename_;
+    CHECK_EQ(mkdir(filename_->c_str(), 0744), 0) << "mkdir " << filename_
+                                                 << "failed";
+    MDB_env *env;
+    MDB_dbi dbi;
+    MDB_val mdbkey, mdbdata;
+    MDB_txn *txn;
+    CHECK_EQ(mdb_env_create(&env), MDB_SUCCESS) << "mdb_env_create failed";
+    CHECK_EQ(mdb_env_set_mapsize(env, 1099511627776), MDB_SUCCESS)  // 1TB
+        << "mdb_env_set_mapsize failed";
+    CHECK_EQ(mdb_env_open(env, filename_->c_str(), 0, 0664), MDB_SUCCESS)
+        << "mdb_env_open failed";
+    CHECK_EQ(mdb_txn_begin(env, NULL, 0, &txn), MDB_SUCCESS)
+        << "mdb_txn_begin failed";
+    CHECK_EQ(mdb_open(txn, NULL, 0, &dbi), MDB_SUCCESS) << "mdb_open failed";
+
+    for (int i = 0; i < 5; ++i) {
+      BlobProtoVector sample;
+      BlobProto* dataMap = sample.add_blobs();
+      dataMap->set_channels(2);
+      dataMap->set_height(3);
+      dataMap->set_width(4);
+      for (int j = 0; j < 24; ++j) {
+        int datum = unique_pixels ? j : i;
+        dataMap->add_data(datum);
+      }
+
+      BlobProto* labelMap = sample.add_blobs();
+      labelMap->set_channels(1);
+      labelMap->set_height(3);
+      labelMap->set_width(4);
+      for (int label_idx = 0; label_idx < 12; ++label_idx){
+        labelMap->add_data(i * 12 + label_idx);
+      }
+
+      stringstream ss;
+      ss << i;
+
+      string value;
+      sample.SerializeToString(&value);
+      mdbdata.mv_size = value.size();
+      mdbdata.mv_data = reinterpret_cast<void*>(&value[0]);
+      string keystr = ss.str();
+      mdbkey.mv_size = keystr.size();
+      mdbkey.mv_data = reinterpret_cast<void*>(&keystr[0]);
+      CHECK_EQ(mdb_put(txn, dbi, &mdbkey, &mdbdata, 0), MDB_SUCCESS)
+          << "mdb_put failed";
+    }
+    CHECK_EQ(mdb_txn_commit(txn), MDB_SUCCESS) << "mdb_txn_commit failed";
+    mdb_close(env, dbi);
+    mdb_env_close(env);
+  }
+
   void TestRead() {
     const Dtype scale = 3;
     LayerParameter param;
@@ -129,6 +184,12 @@ TYPED_TEST_CASE(MapDataLayerTest, TestDtypesAndDevices);
 TYPED_TEST(MapDataLayerTest, TestReadLevelDB) {
   const bool unique_pixels = false;  // all pixels the same; images different
   this->FillLevelDB(unique_pixels);
+  this->TestRead();
+}
+
+TYPED_TEST(MapDataLayerTest, TestReadLMDB) {
+  const bool unique_pixels = false;  // all pixels the same; images different
+  this->FillLMDB(unique_pixels);
   this->TestRead();
 }
 
