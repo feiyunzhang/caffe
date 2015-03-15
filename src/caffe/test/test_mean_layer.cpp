@@ -42,7 +42,7 @@ TYPED_TEST_CASE(MeanLayerTest, TestDtypes);
 TYPED_TEST(MeanLayerTest, TestSetup) {
   LayerParameter layer_param;
   MeanLayer<TypeParam> layer(layer_param);
-  layer.SetUp(this->blob_bottom_vec_, &(this->blob_top_vec_));
+  layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   EXPECT_EQ(this->blob_top_->num(), 1);
   EXPECT_EQ(this->blob_top_->channels(), 1);
   EXPECT_EQ(this->blob_top_->height(), 1);
@@ -53,8 +53,8 @@ TYPED_TEST(MeanLayerTest, TestForwardCPU) {
   LayerParameter layer_param;
   Caffe::set_mode(Caffe::CPU);
   MeanLayer<TypeParam> layer(layer_param);
-  layer.SetUp(this->blob_bottom_vec_, &(this->blob_top_vec_));
-  layer.Forward(this->blob_bottom_vec_, &(this->blob_top_vec_));
+  layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
+  layer.Forward(this->blob_bottom_vec_, this->blob_top_vec_);
 
   double sum = 0;
   for (int i = 0; i < 100; ++i) {

@@ -79,7 +79,7 @@ class VectorLabelDataLayerTest : public MultiDeviceTest<TypeParam> {
     transform_param->set_scale(scale);
 
     VectorLabelDataLayer<Dtype> layer(param);
-    layer.SetUp(blob_bottom_vec_, &blob_top_vec_);
+    layer.SetUp(blob_bottom_vec_, blob_top_vec_);
     EXPECT_EQ(blob_top_data_->num(), 5);
     EXPECT_EQ(blob_top_data_->channels(), 2);
     EXPECT_EQ(blob_top_data_->height(), 3);
@@ -90,7 +90,7 @@ class VectorLabelDataLayerTest : public MultiDeviceTest<TypeParam> {
     EXPECT_EQ(blob_top_label_->width(), 1);
 
     for (int iter = 0; iter < 100; ++iter) {
-      layer.Forward(blob_bottom_vec_, &blob_top_vec_);
+      layer.Forward(blob_bottom_vec_, blob_top_vec_);
       for (int i = 0; i < 5; ++i) {
         for (int label_idx = 0; label_idx < 10; ++label_idx) {
           int top_idx = i * 10 + label_idx;
@@ -106,9 +106,10 @@ class VectorLabelDataLayerTest : public MultiDeviceTest<TypeParam> {
     }
   }
 
-  void TestReadCrop() {
+  void TestReadCrop(Phase phase) {
     const Dtype scale = 3;
     LayerParameter param;
+    param.set_phase(phase);
     Caffe::set_random_seed(1701);
 
     DataParameter* data_param = param.mutable_data_param();
@@ -122,7 +123,7 @@ class VectorLabelDataLayerTest : public MultiDeviceTest<TypeParam> {
     transform_param->set_crop_size(1);
 
     VectorLabelDataLayer<Dtype> layer(param);
-    layer.SetUp(blob_bottom_vec_, &blob_top_vec_);
+    layer.SetUp(blob_bottom_vec_, blob_top_vec_);
     EXPECT_EQ(blob_top_data_->num(), 5);
     EXPECT_EQ(blob_top_data_->channels(), 2);
     EXPECT_EQ(blob_top_data_->height(), 1);
@@ -133,7 +134,7 @@ class VectorLabelDataLayerTest : public MultiDeviceTest<TypeParam> {
     EXPECT_EQ(blob_top_label_->width(), 1);
 
     for (int iter = 0; iter < 2; ++iter) {
-      layer.Forward(blob_bottom_vec_, &blob_top_vec_);
+      layer.Forward(blob_bottom_vec_, blob_top_vec_);
       for (int i = 0; i < 5; ++i) {
         for (int label_idx = 0; label_idx < 10; ++label_idx) {
           int top_idx = i * 10 + label_idx;
@@ -147,7 +148,7 @@ class VectorLabelDataLayerTest : public MultiDeviceTest<TypeParam> {
           num_with_center_value +=
               (center_value == blob_top_data_->cpu_data()[i * 2 + j]);
           // At TEST time, check that we always get center value.
-          if (Caffe::phase() == Caffe::TEST) {
+          if (phase == caffe::TEST) {
             EXPECT_EQ(center_value, this->blob_top_data_->cpu_data()[i * 2 + j])
                 << "debug: iter " << iter << " i " << i << " j " << j;
           }
@@ -156,7 +157,7 @@ class VectorLabelDataLayerTest : public MultiDeviceTest<TypeParam> {
       // At TRAIN time, check that we did not get the center crop all 10 times.
       // (This check fails with probability 1-1/12^10 in a correct
       // implementation, so we call set_random_seed.)
-      if (Caffe::phase() == Caffe::TRAIN) {
+      if (phase == caffe::TRAIN) {
         EXPECT_LT(num_with_center_value, 10);
       }
     }
@@ -179,9 +180,9 @@ class VectorLabelDataLayerTest : public MultiDeviceTest<TypeParam> {
     vector<vector<Dtype> > crop_sequence;
     {
       VectorLabelDataLayer<Dtype> layer1(param);
-      layer1.SetUp(blob_bottom_vec_, &blob_top_vec_);
+      layer1.SetUp(blob_bottom_vec_, blob_top_vec_);
       for (int iter = 0; iter < 2; ++iter) {
-        layer1.Forward(blob_bottom_vec_, &blob_top_vec_);
+        layer1.Forward(blob_bottom_vec_, blob_top_vec_);
         for (int i = 0; i < 5; ++i) {
           for (int label_idx = 0; label_idx < 10; ++label_idx) {
             int top_idx = i * 10 + label_idx;
@@ -203,9 +204,9 @@ class VectorLabelDataLayerTest : public MultiDeviceTest<TypeParam> {
     // Check that the sequence is the same as the original.
     Caffe::set_random_seed(seed_);
     VectorLabelDataLayer<Dtype> layer2(param);
-    layer2.SetUp(blob_bottom_vec_, &blob_top_vec_);
+    layer2.SetUp(blob_bottom_vec_, blob_top_vec_);
     for (int iter = 0; iter < 2; ++iter) {
-      layer2.Forward(blob_bottom_vec_, &blob_top_vec_);
+      layer2.Forward(blob_bottom_vec_, blob_top_vec_);
       for (int i = 0; i < 5; ++i) {
         for (int label_idx = 0; label_idx < 10; ++label_idx) {
           int top_idx = i * 10 + label_idx;
@@ -240,9 +241,9 @@ class VectorLabelDataLayerTest : public MultiDeviceTest<TypeParam> {
     vector<vector<Dtype> > crop_sequence;
     {
       VectorLabelDataLayer<Dtype> layer1(param);
-      layer1.SetUp(blob_bottom_vec_, &blob_top_vec_);
+      layer1.SetUp(blob_bottom_vec_, blob_top_vec_);
       for (int iter = 0; iter < 2; ++iter) {
-        layer1.Forward(blob_bottom_vec_, &blob_top_vec_);
+        layer1.Forward(blob_bottom_vec_, blob_top_vec_);
         for (int i = 0; i < 5; ++i) {
           for (int label_idx = 0; label_idx < 10; ++label_idx) {
             int top_idx = i * 10 + label_idx;
@@ -264,9 +265,9 @@ class VectorLabelDataLayerTest : public MultiDeviceTest<TypeParam> {
     // srand with 1701. Check that the sequence differs from the original.
     srand(seed_);
     VectorLabelDataLayer<Dtype> layer2(param);
-    layer2.SetUp(blob_bottom_vec_, &blob_top_vec_);
+    layer2.SetUp(blob_bottom_vec_, blob_top_vec_);
     for (int iter = 0; iter < 2; ++iter) {
-      layer2.Forward(blob_bottom_vec_, &blob_top_vec_);
+      layer2.Forward(blob_bottom_vec_, blob_top_vec_);
       for (int i = 0; i < 5; ++i) {
         for (int label_idx = 0; label_idx < 10; ++label_idx) {
           int top_idx = i * 10 + label_idx;
@@ -304,16 +305,14 @@ TYPED_TEST(VectorLabelDataLayerTest, TestReadLevelDB) {
 }
 
 TYPED_TEST(VectorLabelDataLayerTest, TestReadCropTrainLevelDB) {
-  Caffe::set_phase(Caffe::TRAIN);
   const bool unique_pixels = true;  // all images the same; pixels different
   this->FillLevelDB(unique_pixels);
-  this->TestReadCrop();
+  this->TestReadCrop(TRAIN);
 }
 
 // Test that the sequence of random crops is consistent when using
 // Caffe::set_random_seed.
 TYPED_TEST(VectorLabelDataLayerTest, TestReadCropTrainSequenceSeededLevelDB) {
-  Caffe::set_phase(Caffe::TRAIN);
   const bool unique_pixels = true;  // all images the same; pixels different
   this->FillLevelDB(unique_pixels);
   this->TestReadCropTrainSequenceSeeded();
@@ -322,17 +321,15 @@ TYPED_TEST(VectorLabelDataLayerTest, TestReadCropTrainSequenceSeededLevelDB) {
 // Test that the sequence of random crops differs across iterations when
 // Caffe::set_random_seed isn't called (and seeds from srand are ignored).
 TYPED_TEST(VectorLabelDataLayerTest, TestReadCropTrainSequenceUnseededLevelDB) {
-  Caffe::set_phase(Caffe::TRAIN);
   const bool unique_pixels = true;  // all images the same; pixels different
   this->FillLevelDB(unique_pixels);
   this->TestReadCropTrainSequenceUnseeded();
 }
 
 TYPED_TEST(VectorLabelDataLayerTest, TestReadCropTestLevelDB) {
-  Caffe::set_phase(Caffe::TEST);
   const bool unique_pixels = true;  // all images the same; pixels different
   this->FillLevelDB(unique_pixels);
-  this->TestReadCrop();
+  this->TestReadCrop(TEST);
 }
 
 }  // namespace caffe

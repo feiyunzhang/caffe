@@ -157,12 +157,12 @@ __global__ void StoPoolForwardTest(const int nthreads,
 
 template <typename Dtype>
 void PoolingSKLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      vector<Blob<Dtype>*>* top) {
+      const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->gpu_data();
-  Dtype* top_data = (*top)[0]->mutable_gpu_data();
-  int count = (*top)[0]->count();
+  Dtype* top_data = top[0]->mutable_gpu_data();
+  int count = top[0]->count();
   // We'll output the mask to top[1] if it's of size >1.
-  const bool use_top_mask = top->size() > 1;
+  const bool use_top_mask = top.size() > 1;
   int* mask = NULL;
   Dtype* top_mask = NULL;
 
@@ -172,7 +172,7 @@ void PoolingSKLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   switch (this->layer_param_.pooling_param().pool()) {
   case PoolingParameter_PoolMethod_MAX:
     if (use_top_mask) {
-      top_mask = (*top)[1]->mutable_gpu_data();
+      top_mask = top[1]->mutable_gpu_data();
     } else {
       mask = max_idx_.mutable_gpu_data();
     }
@@ -195,7 +195,7 @@ void PoolingSKLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
         pad_h_, pad_w_, top_data);
     break;
   case PoolingParameter_PoolMethod_STOCHASTIC:
-    if (Caffe::phase() == Caffe::TRAIN) {
+    if (this->phase_ == TRAIN) {
       // We need to create the random index as well.
       caffe_gpu_rng_uniform(count, Dtype(0), Dtype(1),
                             rand_idx_.mutable_gpu_data());
@@ -226,12 +226,12 @@ void PoolingSKLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void PoolingSKLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom) {
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
   return;
 }
 
 
-INSTANTIATE_CLASS(PoolingSKLayer);
+INSTANTIATE_LAYER_GPU_FUNCS(PoolingSKLayer);
 
 
 }  // namespace caffe

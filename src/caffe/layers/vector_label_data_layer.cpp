@@ -21,10 +21,10 @@ VectorLabelDataLayer<Dtype>::~VectorLabelDataLayer<Dtype>() {
 
 template <typename Dtype>
 void VectorLabelDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      vector<Blob<Dtype>*>* top) {
+      const vector<Blob<Dtype>*>& top) {
   // Initialize DB
   leveldb::DB* db_temp;
-  leveldb::Options options = GetLevelDBOptions();
+  leveldb::Options options = leveldb::Options();
   options.create_if_missing = false;
   LOG(INFO) << "Opening leveldb " << this->layer_param_.data_param().source();
   leveldb::Status status = leveldb::DB::Open(
@@ -55,33 +55,31 @@ void VectorLabelDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bot
   // image
   int crop_size = this->layer_param_.transform_param().crop_size();
   if (crop_size > 0) {
-    (*top)[0]->Reshape(this->layer_param_.data_param().batch_size(),
+    top[0]->Reshape(this->layer_param_.data_param().batch_size(),
                        datum.channels(), crop_size, crop_size);
     this->prefetch_data_.Reshape(this->layer_param_.data_param().batch_size(),
         datum.channels(), crop_size, crop_size);
+    this->transformed_data_.Reshape(1, datum.channels(), crop_size, crop_size);
   } else {
-    (*top)[0]->Reshape(
+    top[0]->Reshape(
         this->layer_param_.data_param().batch_size(), datum.channels(),
         datum.height(), datum.width());
     this->prefetch_data_.Reshape(this->layer_param_.data_param().batch_size(),
         datum.channels(), datum.height(), datum.width());
+    this->transformed_data_.Reshape(1, datum.channels(),
+                                    datum.height(), datum.width());
   }
-  LOG(INFO) << "output data size: " << (*top)[0]->num() << ","
-      << (*top)[0]->channels() << "," << (*top)[0]->height() << ","
-      << (*top)[0]->width();
+  LOG(INFO) << "output data size: " << top[0]->num() << ","
+      << top[0]->channels() << "," << top[0]->height() << ","
+      << top[0]->width();
   // label
   if (this->output_labels_) {
     int label_size = std::max(datum.multi_label_size(), datum.multi_float_label_size());
     CHECK_GE(label_size, 1) << "Vector label size must greater than 0.";
-    (*top)[1]->Reshape(this->layer_param_.data_param().batch_size(), label_size, 1, 1);
+    top[1]->Reshape(this->layer_param_.data_param().batch_size(), label_size, 1, 1);
     this->prefetch_label_.Reshape(this->layer_param_.data_param().batch_size(),
         label_size, 1, 1);
   }
-  // datum size
-  this->datum_channels_ = datum.channels();
-  this->datum_height_ = datum.height();
-  this->datum_width_ = datum.width();
-  this->datum_size_ = datum.channels() * datum.height() * datum.width();
 }
 
 // This function is used to create a thread that prefetches the data.
@@ -104,7 +102,9 @@ void VectorLabelDataLayer<Dtype>::InternalThreadEntry() {
     int label_size = std::max(datum.multi_label_size(), datum.multi_float_label_size());
 
     // Apply data transformations (mirror, scale, crop...)
-    this->data_transformer_.Transform(item_id, datum, this->mean_, top_data);
+    int offset = this->prefetch_data_.offset(item_id);
+    this->transformed_data_.set_cpu_data(top_data + offset);
+    this->data_transformer_->Transform(datum, &(this->transformed_data_));
 
     if (this->output_labels_) {
       if (datum.multi_label_size()) {
@@ -131,5 +131,6 @@ void VectorLabelDataLayer<Dtype>::InternalThreadEntry() {
 }
 
 INSTANTIATE_CLASS(VectorLabelDataLayer);
+REGISTER_LAYER_CLASS(VectorLabelData);
 
 }  // namespace caffe

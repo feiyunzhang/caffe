@@ -15,7 +15,7 @@ using std::max;
 
 template <typename Dtype>
 void PoolingSKLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      vector<Blob<Dtype>*>* top) {
+      const vector<Blob<Dtype>*>& top) {
   // Layer<Dtype>::SetUp(bottom, top);
   PoolingParameter pool_param = this->layer_param_.pooling_param();
   CHECK(!pool_param.has_kernel_size() !=
@@ -73,7 +73,7 @@ void PoolingSKLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
 template<typename Dtype>
 void PoolingSKLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      vector<Blob<Dtype>*>* top) {
+      const vector<Blob<Dtype>*>& top) {
   int ext_kernel_h = (kernel_h_ - 1) * kstride_h_ + 1;
   int ext_kernel_w = (kernel_w_ - 1) * kstride_w_ + 1;
 
@@ -85,14 +85,14 @@ void PoolingSKLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   pooled_width_ = static_cast<int>(ceil(static_cast<float>(
       width_ + 2 * pad_w_ - ext_kernel_w) / stride_w_)) + 1;
   
-  (*top)[0]->Reshape(bottom[0]->num(), channels_, pooled_height_,
+  top[0]->Reshape(bottom[0]->num(), channels_, pooled_height_,
       pooled_width_);
-  if (top->size() > 1) {
-    (*top)[1]->ReshapeLike(*(*top)[0]);
+  if (top.size() > 1) {
+    top[1]->ReshapeLike(*top[0]);
   }
   // If max pooling, we will initialize the vector index part.
   if (this->layer_param_.pooling_param().pool() ==
-      PoolingParameter_PoolMethod_MAX && top->size() == 1) {
+      PoolingParameter_PoolMethod_MAX && top.size() == 1) {
     max_idx_.Reshape(bottom[0]->num(), channels_, pooled_height_,
         pooled_width_);
   }
@@ -108,13 +108,13 @@ void PoolingSKLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 // case?
 template <typename Dtype>
 void PoolingSKLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      vector<Blob<Dtype>*>* top) {
+      const vector<Blob<Dtype>*>& top) {
   LOG(FATAL) << "Pooling Forward_cpu method not implemented.";
 }
 
 template <typename Dtype>
 void PoolingSKLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom) {
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
   return;
 }
 
@@ -124,6 +124,7 @@ STUB_GPU(PoolingSKLayer);
 #endif
 
 INSTANTIATE_CLASS(PoolingSKLayer);
+REGISTER_LAYER_CLASS(PoolingSK);
 
 
 }  // namespace caffe

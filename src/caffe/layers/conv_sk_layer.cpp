@@ -10,7 +10,7 @@ namespace caffe {
 
 template <typename Dtype>
 void ConvolutionSKLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      vector<Blob<Dtype>*>* top) {
+      const vector<Blob<Dtype>*>& top) {
   // Layer<Dtype>::SetUp(bottom, top);
   ConvolutionParameter conv_param = this->layer_param_.convolution_param();
   CHECK(!conv_param.has_kernel_size() !=
@@ -93,7 +93,7 @@ void ConvolutionSKLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
 template<typename Dtype>
 void ConvolutionSKLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      vector<Blob<Dtype>*>* top) {
+      const vector<Blob<Dtype>*>& top) {
   num_ = bottom[0]->num();
   height_ = bottom[0]->height();
   width_ = bottom[0]->width();
@@ -121,8 +121,8 @@ void ConvolutionSKLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   M_ = num_output_ / group_;
   K_ = channels_ * kernel_h_ * kernel_w_ / group_;
   N_ = height_out * width_out;
-  for (int top_id = 0; top_id < top->size(); ++top_id) {
-    (*top)[top_id]->Reshape(num_, num_output_, height_out, width_out);
+  for (int top_id = 0; top_id < top.size(); ++top_id) {
+    top[top_id]->Reshape(num_, num_output_, height_out, width_out);
   }
   // Set up the all ones "bias multiplier" for adding bias using blas
   if (bias_term_) {
@@ -133,10 +133,10 @@ void ConvolutionSKLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void ConvolutionSKLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      vector<Blob<Dtype>*>* top) {
+      const vector<Blob<Dtype>*>& top) {
   for (int i = 0; i < bottom.size(); ++i) {
     const Dtype* bottom_data = bottom[i]->cpu_data();
-    Dtype* top_data = (*top)[i]->mutable_cpu_data();
+    Dtype* top_data = top[i]->mutable_cpu_data();
     Dtype* col_data = col_buffer_.mutable_cpu_data();
     const Dtype* weight = this->blobs_[0]->cpu_data();
     int weight_offset = M_ * K_;
@@ -152,14 +152,14 @@ void ConvolutionSKLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       for (int g = 0; g < group_; ++g) {
         caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, M_, N_, K_,
           (Dtype)1., weight + weight_offset * g, col_data + col_offset * g,
-          (Dtype)0., top_data + (*top)[i]->offset(n) + top_offset * g);
+          (Dtype)0., top_data + top[i]->offset(n) + top_offset * g);
       }
       // third, add bias
       if (bias_term_) {
         caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num_output_,
             N_, 1, (Dtype)1., this->blobs_[1]->cpu_data(),
             bias_multiplier_.cpu_data(),
-            (Dtype)1., top_data + (*top)[i]->offset(n));
+            (Dtype)1., top_data + top[i]->offset(n));
       }
     }
   }
@@ -168,7 +168,7 @@ void ConvolutionSKLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void ConvolutionSKLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom) {
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
   LOG(FATAL) << " Backward_cpu() not implemented for ConvolutionSKLayer.";
 }
 
@@ -177,5 +177,6 @@ STUB_GPU(ConvolutionSKLayer);
 #endif
 
 INSTANTIATE_CLASS(ConvolutionSKLayer);
+REGISTER_LAYER_CLASS(ConvolutionSK);
 
 }  // namespace caffe

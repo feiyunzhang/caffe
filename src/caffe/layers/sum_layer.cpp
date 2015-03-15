@@ -10,15 +10,15 @@ namespace caffe {
 
 template <typename Dtype>
 void SumLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-                                 vector<Blob<Dtype>*>* top) {
-  (*top)[0]->Reshape(bottom[0]->num(), 1, 1, 1);
+                                 const vector<Blob<Dtype>*>& top) {
+  top[0]->Reshape(bottom[0]->num(), 1, 1, 1);
 }
 
 template <typename Dtype>
 void SumLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                                     vector<Blob<Dtype>*>* top) {
+                                     const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
-  Dtype* top_data = (*top)[0]->mutable_cpu_data();
+  Dtype* top_data = top[0]->mutable_cpu_data();
   const int num = bottom[0]->num();
   const int dim = bottom[0]->count() / bottom[0]->num();
   for (int i = 0; i < num; ++i) {
@@ -31,5 +31,6 @@ void SumLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 INSTANTIATE_CLASS(SumLayer);
+REGISTER_LAYER_CLASS(Sum);
 
 }  // namespace caffe

@@ -140,7 +140,7 @@ class MapDataLayerTest : public MultiDeviceTest<TypeParam> {
     transform_param->set_scale(scale);
 
     MapDataLayer<Dtype> layer(param);
-    layer.SetUp(blob_bottom_vec_, &blob_top_vec_);
+    layer.SetUp(blob_bottom_vec_, blob_top_vec_);
     EXPECT_EQ(blob_top_data_->num(), 5);
     EXPECT_EQ(blob_top_data_->channels(), 2);
     EXPECT_EQ(blob_top_data_->height(), 3);
@@ -151,7 +151,7 @@ class MapDataLayerTest : public MultiDeviceTest<TypeParam> {
     EXPECT_EQ(blob_top_label_->width(), 4);
 
     for (int iter = 0; iter < 100; ++iter) {
-      layer.Forward(blob_bottom_vec_, &blob_top_vec_);
+      layer.Forward(blob_bottom_vec_, blob_top_vec_);
       for (int i = 0; i < 5; ++i) {
         for (int label_idx = 0; label_idx < 12; ++label_idx) {
           int top_idx = i * 12 + label_idx;

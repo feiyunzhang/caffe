@@ -44,18 +44,19 @@ TransformationParameter MapDataLayer<Dtype>::label_trans_param(
   label_transform_param.set_scale(1);
   label_transform_param.set_crop_size(crop_size);
   label_transform_param.set_mirror(mirror);
+  label_transform_param.clear_mean_file();
   return label_transform_param;
 }
 
 template <typename Dtype>
 void MapDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      vector<Blob<Dtype>*>* top) {
+      const vector<Blob<Dtype>*>& top) {
   // Initialize DB
   switch (this->layer_param_.data_param().backend()) {
   case DataParameter_DB_LEVELDB:
     {
     leveldb::DB* db_temp;
-    leveldb::Options options = GetLevelDBOptions();
+      leveldb::Options options = leveldb::Options();
     options.create_if_missing = false;
     LOG(INFO) << "Opening leveldb " << this->layer_param_.data_param().source();
     leveldb::Status status = leveldb::DB::Open(
@@ -138,26 +139,30 @@ void MapDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   CHECK(!mirror) << "MapDataLayer does not support mirroring";
 
   // reshape data map
-  (*top)[0]->Reshape(
+  top[0]->Reshape(
       this->layer_param_.data_param().batch_size(), dataMap.channels(),
       dataMap.height(), dataMap.width());
   this->prefetch_data_.Reshape(this->layer_param_.data_param().batch_size(),
       dataMap.channels(), dataMap.height(), dataMap.width());
+  this->transformed_data_.Reshape(1, dataMap.channels(),
+      dataMap.height(), dataMap.width());
   // reshape label map
-  (*top)[1]->Reshape(
+  top[1]->Reshape(
       this->layer_param_.data_param().batch_size(), labelMap.channels(),
       labelMap.height(), labelMap.width());
   this->prefetch_label_.Reshape(this->layer_param_.data_param().batch_size(),
       labelMap.channels(), labelMap.height(), labelMap.width());
-  LOG(INFO) << "output data size: " << (*top)[0]->num() << ","
-      << (*top)[0]->channels() << "," << (*top)[0]->height() << ","
-      << (*top)[0]->width();
+  this->transformed_label_.Reshape(1, labelMap.channels(),
+                                  labelMap.height(), labelMap.width());
+  LOG(INFO) << "output data size: " << top[0]->num() << ","
+      << top[0]->channels() << "," << top[0]->height() << ","
+      << top[0]->width();
 
   // data map size
-  this->datum_channels_ = dataMap.channels();
-  this->datum_height_ = dataMap.height();
-  this->datum_width_ = dataMap.width();
-  this->datum_size_ = dataMap.channels() * dataMap.height() * dataMap.width();
+  //  this->datum_channels_ = dataMap.channels();
+  //  this->datum_height_ = dataMap.height();
+  //  this->datum_width_ = dataMap.width();
+  //  this->datum_size_ = dataMap.channels() * dataMap.height() * dataMap.width();
   int label_size = labelMap.channels() * labelMap.height() * labelMap.width();
   label_mean_ = new Dtype[label_size]();
 }
@@ -203,8 +208,13 @@ void MapDataLayer<Dtype>::InternalThreadEntry() {
     labelMap = BlobProto2Datum(maps.blobs(1));
 
     // Apply data and label transformations (mirror, scale, crop...)
-    this->data_transformer_.Transform(item_id, dataMap, this->mean_, top_data);
-    this->label_transformer_.Transform(item_id, labelMap, this->label_mean_, top_label);
+    int offset = this->prefetch_data_.offset(item_id);
+    this->transformed_data_.set_cpu_data(top_data + offset);
+    this->data_transformer_->Transform(dataMap, &(this->transformed_data_));
+    
+    int label_offset = this->prefetch_label_.offset(item_id);
+    this->transformed_label_.set_cpu_data(top_label + label_offset);
+    this->label_transformer_.Transform(labelMap, &(this->transformed_label_));
 
     // go to the next iter
     switch (this->layer_param_.data_param().backend()) {
@@ -232,5 +242,6 @@ void MapDataLayer<Dtype>::InternalThreadEntry() {
 }
 
 INSTANTIATE_CLASS(MapDataLayer);
+REGISTER_LAYER_CLASS(MapData);
 
 } // caffe
