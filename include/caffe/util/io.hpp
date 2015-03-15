@@ -102,6 +102,10 @@ inline bool ReadImageToDatum(const string& filename, const int label,
   return ReadImageToDatum(filename, label, 0, 0, datum);
 }
 
+bool ReadImagePairToBlobProtoVector(const string& imgname,
+    const string& segmname, const int height, const int width,
+    BlobProtoVector* sample);
+
 leveldb::Options GetLevelDBOptions();
 
 template <typename Dtype>

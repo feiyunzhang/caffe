@@ -111,6 +111,63 @@ bool ReadImageToDatum(const string& filename, const int label,
   return true;
 }
 
+bool ReadImagePairToBlobProtoVector(const string& imgname,
+    const string& segmname, const int height, const int width,
+    BlobProtoVector* sample) {
+  cv::Mat cv_img;
+  cv::Mat cv_segm;
+
+  cv::Mat cv_img_origin = cv::imread(imgname, CV_LOAD_IMAGE_COLOR);
+  if (!cv_img_origin.data) {
+    LOG(ERROR) << "Could not open or find file " << imgname;
+    return false;
+  }
+  cv::Mat cv_segm_origin = cv::imread(segmname, CV_LOAD_IMAGE_GRAYSCALE);
+  if (!cv_segm_origin.data) {
+    LOG(ERROR) << "Could not open or find file " << segmname;
+    return false;
+  }
+  if (height > 0 && width > 0) {
+    cv::resize(cv_img_origin, cv_img, cv::Size(width, height));
+    cv::resize(cv_segm_origin, cv_segm, cv::Size(width, height));
+  } else {
+    cv_img = cv_img_origin;
+    cv_segm = cv_segm_origin;
+  }
+
+  BlobProto* data_blob = sample->add_blobs();
+  BlobProto* label_blob = sample->add_blobs();
+
+  data_blob->set_num(1);
+  data_blob->set_channels(3);
+  data_blob->set_height(cv_img.rows);
+  data_blob->set_width(cv_img.cols);
+  data_blob->clear_data();
+  ::google::protobuf::RepeatedField<float>* data_blob_string = data_blob->mutable_data();
+  for (int c = 0; c < 3; ++c) {
+    for (int h = 0; h < cv_img.rows; ++h) {
+      for (int w = 0; w < cv_img.cols; ++w) {
+        data_blob_string->Add(
+          static_cast<float>(cv_img.at<cv::Vec3b>(h, w)[c]));
+      }
+    }
+  }
+
+  label_blob->set_num(1);
+  label_blob->set_channels(1);
+  label_blob->set_height(cv_segm.rows);
+  label_blob->set_width(cv_segm.cols);
+  label_blob->clear_data();
+  ::google::protobuf::RepeatedField<float>* label_blob_string = label_blob->mutable_data();
+  for (int h = 0; h < cv_segm.rows; ++h) {
+    for (int w = 0; w < cv_segm.cols; ++w) {
+      float label = (cv_segm.at<uchar>(h, w) >= 127) ? 1. : 0.;
+      label_blob_string->Add(label);
+    }
+  }
+  return true;
+}
+
 leveldb::Options GetLevelDBOptions() {
   // In default, we will return the leveldb option and set the max open files
   // in order to avoid using up the operating system's limit.
