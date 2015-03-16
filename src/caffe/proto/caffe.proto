@@ -809,6 +809,8 @@ message V1LayerParameter {
     CONCAT = 3;
     CONTRASTIVE_LOSS = 37;
     CONVOLUTION = 4;
+    // Sparse-kernel convolutional layer
+    CONVOLUTION_SK = 40;
     DATA = 5;
     DECONVOLUTION = 39;
     DROPOUT = 6;
@@ -825,12 +827,18 @@ message V1LayerParameter {
     INFOGAIN_LOSS = 13;
     INNER_PRODUCT = 14;
     LRN = 15;
+    MAP_DATA = 42;
+    MEAN = 45;
     MEMORY_DATA = 29;
     MULTINOMIAL_LOGISTIC_LOSS = 16;
     MVN = 34;
+    NORMALIZED_SIGMOID_CROSS_ENTROPY_LOSS = 46;
     POOLING = 17;
+    // Sparse-kernel pooling layer
+    POOLING_SK = 41;
     POWER = 26;
     RELU = 18;
+    SAMPLING_VECTOR_LABEL_DATA = 47;
     SIGMOID = 19;
     SIGMOID_CROSS_ENTROPY_LOSS = 27;
     SILENCE = 36;
@@ -838,7 +846,9 @@ message V1LayerParameter {
     SOFTMAX_LOSS = 21;
     SPLIT = 22;
     SLICE = 33;
+    SUM = 44;
     TANH = 23;
+    VECTOR_LABEL_DATA = 43;
     WINDOW_DATA = 24;
     THRESHOLD = 31;
   }
@@ -872,9 +882,11 @@ message V1LayerParameter {
   optional LRNParameter lrn_param = 18;
   optional MemoryDataParameter memory_data_param = 22;
   optional MVNParameter mvn_param = 34;
+  optional NormSigmoidCrossEntropyParameter norm_sigmoid_param = 43;
   optional PoolingParameter pooling_param = 19;
   optional PowerParameter power_param = 21;
   optional ReLUParameter relu_param = 30;
+  optional SamplingParameter sampling_param = 44;
   optional SigmoidParameter sigmoid_param = 38;
   optional SoftmaxParameter softmax_param = 39;
   optional SliceParameter slice_param = 31;

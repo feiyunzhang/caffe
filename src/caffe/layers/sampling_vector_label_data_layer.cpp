@@ -188,5 +188,6 @@ void SamplingVectorLabelDataLayer<Dtype>::InternalThreadEntry() {
 }
 
 INSTANTIATE_CLASS(SamplingVectorLabelDataLayer);
+REGISTER_LAYER_CLASS(SamplingVectorLabelData);
 
 }  // namespace caffe

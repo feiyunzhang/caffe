@@ -853,6 +853,8 @@ const char* UpgradeV1LayerType(const V1LayerParameter_LayerType type) {
     return "ContrastiveLoss";
   case V1LayerParameter_LayerType_CONVOLUTION:
     return "Convolution";
+  case V1LayerParameter_LayerType_CONVOLUTION_SK:
+    return "ConvolutionSK";
   case V1LayerParameter_LayerType_DECONVOLUTION:
     return "Deconvolution";
   case V1LayerParameter_LayerType_DATA:
@@ -885,18 +887,28 @@ const char* UpgradeV1LayerType(const V1LayerParameter_LayerType type) {
     return "InnerProduct";
   case V1LayerParameter_LayerType_LRN:
     return "LRN";
+  case V1LayerParameter_LayerType_MAP_DATA:
+    return "MapData";
+  case V1LayerParameter_LayerType_MEAN:
+    return "Mean";
   case V1LayerParameter_LayerType_MEMORY_DATA:
     return "MemoryData";
   case V1LayerParameter_LayerType_MULTINOMIAL_LOGISTIC_LOSS:
     return "MultinomialLogisticLoss";
   case V1LayerParameter_LayerType_MVN:
     return "MVN";
+  case V1LayerParameter_LayerType_NORMALIZED_SIGMOID_CROSS_ENTROPY_LOSS:
+    return "NormalizedSigmoidCrossEntropyLoss";
   case V1LayerParameter_LayerType_POOLING:
     return "Pooling";
+  case V1LayerParameter_LayerType_POOLING_SK:
+    return "PoolingSK";
   case V1LayerParameter_LayerType_POWER:
     return "Power";
   case V1LayerParameter_LayerType_RELU:
     return "ReLU";
+  case V1LayerParameter_LayerType_SAMPLING_VECTOR_LABEL_DATA:
+    return "SamplingVectorLabelData";
   case V1LayerParameter_LayerType_SIGMOID:
     return "Sigmoid";
   case V1LayerParameter_LayerType_SIGMOID_CROSS_ENTROPY_LOSS:
@@ -911,12 +923,16 @@ const char* UpgradeV1LayerType(const V1LayerParameter_LayerType type) {
     return "Split";
   case V1LayerParameter_LayerType_SLICE:
     return "Slice";
+  case V1LayerParameter_LayerType_SUM:
+    return "Sum";
   case V1LayerParameter_LayerType_TANH:
     return "TanH";
   case V1LayerParameter_LayerType_WINDOW_DATA:
     return "WindowData";
   case V1LayerParameter_LayerType_THRESHOLD:
     return "Threshold";
+  case V1LayerParameter_LayerType_VECTOR_LABEL_DATA:
+    return "VectorLabelData";
   default:
     LOG(FATAL) << "Unknown V1LayerParameter layer type: " << type;
     return "";

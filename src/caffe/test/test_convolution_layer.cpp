@@ -451,7 +451,7 @@ class CuDNNConvolutionLayerTest : public ::testing::Test {
 
   virtual Blob<Dtype>* MakeReferenceTop(Blob<Dtype>* top) {
     this->ref_blob_top_.reset(new Blob<Dtype>());
-    this->ref_blob_top_->ReshapeLiketop;
+    this->ref_blob_top_->ReshapeLike(*top);
     return this->ref_blob_top_.get();
   }
 
