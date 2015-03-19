@@ -178,17 +178,8 @@ class MapDataLayer : public BasePrefetchingDataLayer<Dtype> {
   DataTransformer<Dtype> label_transformer_;
   Blob<Dtype> transformed_label_;
 
-  // LEVELDB
-  shared_ptr<leveldb::DB> db_;
-  shared_ptr<leveldb::Iterator> iter_;
-  // LMDB
-  MDB_env* mdb_env_;
-  MDB_dbi mdb_dbi_;
-  MDB_txn* mdb_txn_;
-  MDB_cursor* mdb_cursor_;
-  MDB_val mdb_key_, mdb_value_;
-  
-  const Dtype* label_mean_;
+  shared_ptr<db::DB> db_;
+  shared_ptr<db::Cursor> iter_;
 
  private:
   static TransformationParameter label_trans_param(
