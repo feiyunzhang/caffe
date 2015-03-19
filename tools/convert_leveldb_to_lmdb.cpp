@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
 
     if (++count % 1000 == 0) {
       txn->Commit();
-      txn.reset(in_db->NewTransaction());
+      txn.reset(out_db->NewTransaction());
       LOG(INFO) << "Processed " << count << " files.";
     }
   }
