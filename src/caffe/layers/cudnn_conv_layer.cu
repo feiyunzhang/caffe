@@ -23,7 +23,10 @@ void CuDNNConvolutionLayer<Dtype>::Forward_gpu(
     for (int g = 0; g < this->group_; g++) {
       cudnnConvolutionFwdAlgo_t algo;
 
-      // get the desired convolution algorithm
+      // pick the convolution algorithm
+      // TODO(shelhamer) this should be done during reshape
+      // TODO(shelhamer) the choice of automatic or manual algorithm picking
+      // should be exposed in proto
       CUDNN_CHECK(cudnnGetConvolutionForwardAlgorithm(handle_[g],
         bottom_descs_[i],
         filter_desc_,
@@ -42,16 +45,13 @@ void CuDNNConvolutionLayer<Dtype>::Forward_gpu(
         conv_descs_[i],
         top_descs_[i],
         algo,
-        &workspaceSizeInBytes_temp));
+        &workspaceSizeInBytes));
 
       if (workspaceSizeInBytes_temp > workspaceSizeInBytes) {
         workspaceSizeInBytes = workspaceSizeInBytes_temp;
         // free the existing workspace and allocate a new (larger) one
-        if (this->workspace != NULL) {
-          cudaFree(this->workspace);
-        }
+        cudaFree(this->workspace);
         cudaMalloc(&(this->workspace), workspaceSizeInBytes);
-        CUDA_POST_KERNEL_CHECK;
       }
 
       // Filters.
