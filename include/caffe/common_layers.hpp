@@ -345,6 +345,43 @@ class MVNLayer : public Layer<Dtype> {
   Blob<Dtype> sum_multiplier_;
 };
 
+
+/**
+ *  @brief Generating Perspective Maps -- a shading map controlled
+ *         by input blobs "slop" and "intercept"
+ */
+template <typename Dtype>
+class PerspectiveLayer : public Layer<Dtype> {
+public:
+  explicit PerspectiveLayer(const LayerParameter& param)
+  : Layer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+                          const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+                       const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "Perspective"; }
+  virtual inline int MinNumBottomBlobs() const { return 2; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }
+
+protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+                           const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+                           const vector<Blob<Dtype>*>& top);
+  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
+                            const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
+                            const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  Blob<Dtype> slope_multiplier_;
+  Blob<Dtype> intercept_multiplier_;
+  int num_;
+  int height_;
+  int width_;
+  int channels_;
+
+};
+
 /**
  * @brief Compute "reductions" -- operations that return a scalar output Blob
  *        for an input Blob of arbitrary size, such as the sum, absolute sum,
