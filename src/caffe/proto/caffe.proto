@@ -262,7 +262,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 137 (last added: reshape_param)
+// LayerParameter next available layer-specific ID: 138 (last added: perspective_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -325,6 +325,7 @@ message LayerParameter {
   optional MemoryDataParameter memory_data_param = 119;
   optional MVNParameter mvn_param = 120;
   optional NormSigmoidCrossEntropyParameter norm_sigmoid_param = 132;
+  optional PerspectiveParameter perspective_param = 137;
   optional PoolingParameter pooling_param = 121;
   optional PowerParameter power_param = 122;
   optional PReLUParameter prelu_param = 131;
@@ -637,6 +638,12 @@ message MVNParameter {
 message NormSigmoidCrossEntropyParameter {
   // Normalization threshold
   optional float norm_threshold = 1 [default = 2.];
+}
+
+// Message that stores parameters used by PerspectiveLayer
+message PerspectiveParameter {
+  optional float height_mult = 1 [default = 1.];
+  optional float width_mult = 2 [default = 1.];
 }
 
 // Message that stores parameters used by PoolingLayer
