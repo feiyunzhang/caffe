@@ -56,8 +56,12 @@ void PerspectiveLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const Dtype slope = bottom[0]->cpu_data()[bottom[0]->offset(n)];
     const Dtype intercept = bottom[1]->cpu_data()[bottom[1]->offset(n)];
     Dtype* cur_map = top[0]->mutable_cpu_data() + top[0]->offset(n);
-    caffe_cpu_axpby<Dtype>(height_ * width_, slope, slope_multiplier_.cpu_data(), Dtype(0.), cur_map);
-    caffe_add_scalar<Dtype>(height_ * width_, intercept, cur_map);
+    caffe_cpu_axpby<Dtype>(height_ * width_,
+                           slope, slope_multiplier_.cpu_data(),
+                           Dtype(0.), cur_map);
+    caffe_cpu_axpby<Dtype>(height_ * width_,
+                           intercept, intercept_multiplier_.cpu_data(),
+                           Dtype(1.), cur_map);
   }
 }
 

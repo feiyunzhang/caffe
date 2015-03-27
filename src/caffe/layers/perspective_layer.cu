@@ -15,7 +15,8 @@ void PerspectiveLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     Dtype* cur_map = top[0]->mutable_gpu_data() + top[0]->offset(n);
     caffe_gpu_axpby<Dtype>(height_ * width_, slope,
         slope_multiplier_.gpu_data(), Dtype(0.), cur_map);
-    caffe_gpu_add_scalar<Dtype>(height_ * width_, intercept, cur_map);
+    caffe_gpu_axpby<Dtype>(height_ * width_, intercept,
+        intercept_multiplier_.gpu_data(), Dtype(1.), cur_map);
   }
 }
 
