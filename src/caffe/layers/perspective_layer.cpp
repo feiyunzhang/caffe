@@ -22,27 +22,27 @@ void PerspectiveLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   // Initialize multipliers
   slope_multiplier_.Reshape(1, 1, height_, width_);
   intercept_multiplier_.Reshape(1, 1, height_, width_);
-  Dtype row_mult = this->layer_param_.perspective_param().height_mult();
-  Dtype col_mult = this->layer_param_.perspective_param().width_mult();
   Blob<Dtype> slope_row_fac, slope_col_fac, intercept_row_fac, intercept_col_fac;
   slope_row_fac.Reshape(1, 1, height_, 1);
   intercept_row_fac.Reshape(1, 1, height_, 1);
   for (int i = 0; i < height_; i++) {
-    slope_row_fac.mutable_cpu_data()[i] = i * row_mult;
+    slope_row_fac.mutable_cpu_data()[i] = i;
   }
-  caffe_set<Dtype>(height_, (Dtype)1. * row_mult,
+  caffe_set<Dtype>(height_, (Dtype)1.,
                    intercept_row_fac.mutable_cpu_data());
 
   slope_col_fac.Reshape(1, 1, 1, width_);
   intercept_col_fac.Reshape(1, 1, 1, width_);
-  caffe_set(width_, (Dtype)1. * col_mult, slope_col_fac.mutable_cpu_data());
-  caffe_set(width_, (Dtype)1. * col_mult, intercept_col_fac.mutable_cpu_data());
+  caffe_set(width_, (Dtype)1., slope_col_fac.mutable_cpu_data());
+  caffe_set(width_, (Dtype)1., intercept_col_fac.mutable_cpu_data());
 
+  Dtype slope_mult = this->layer_param_.perspective_param().slope_mult();
+  Dtype intercept_mult = this->layer_param_.perspective_param().intercept_mult();
   caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, height_, width_, 1,
-      (Dtype)1., slope_row_fac.cpu_data(), slope_col_fac.cpu_data(),
+      slope_mult, slope_row_fac.cpu_data(), slope_col_fac.cpu_data(),
       (Dtype)0., slope_multiplier_.mutable_cpu_data());
   caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, height_, width_, 1,
-      (Dtype)1., intercept_row_fac.cpu_data(), intercept_col_fac.cpu_data(),
+      intercept_mult, intercept_row_fac.cpu_data(), intercept_col_fac.cpu_data(),
       (Dtype)0., intercept_multiplier_.mutable_cpu_data());
 }
 

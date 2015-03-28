@@ -642,8 +642,8 @@ message NormSigmoidCrossEntropyParameter {
 
 // Message that stores parameters used by PerspectiveLayer
 message PerspectiveParameter {
-  optional float height_mult = 1 [default = 1.];
-  optional float width_mult = 2 [default = 1.];
+  optional float slope_mult = 1 [default = 1.];
+  optional float intercept_mult = 2 [default = 1.];
 }
 
 // Message that stores parameters used by PoolingLayer

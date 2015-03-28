@@ -87,10 +87,10 @@ TYPED_TEST(PerspectiveLayerTest, TestForward) {
 TYPED_TEST(PerspectiveLayerTest, TestForwardWithMult) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter layer_param;
-  Dtype height_mult = 0.1;
-  Dtype width_mult = 0.2;
-  layer_param.mutable_perspective_param()->set_height_mult(height_mult);
-  layer_param.mutable_perspective_param()->set_width_mult(width_mult);
+  Dtype slope_mult = 0.1;
+  Dtype intercept_mult = 0.2;
+  layer_param.mutable_perspective_param()->set_slope_mult(slope_mult);
+  layer_param.mutable_perspective_param()->set_intercept_mult(intercept_mult);
   shared_ptr<PerspectiveLayer<Dtype> > layer(new PerspectiveLayer<Dtype>(layer_param));
   layer->SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer->Forward(this->blob_bottom_vec_, this->blob_top_vec_);
@@ -102,7 +102,7 @@ TYPED_TEST(PerspectiveLayerTest, TestForwardWithMult) {
     for (int row = 0; row < 4; row++) {
       for (int col = 0; col < 5; col++) {
         EXPECT_NEAR(*(top_data + top->offset(num, 0, row, col)),
-                    (row * slope + intercept) * height_mult * width_mult,
+                    (row * slope * slope_mult + intercept * intercept_mult),
                     Dtype(1e-7));
       }
     }
@@ -121,10 +121,10 @@ TYPED_TEST(PerspectiveLayerTest, TestGradient) {
 TYPED_TEST(PerspectiveLayerTest, TestGradientWithMult) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter layer_param;
-  Dtype height_mult = 0.1;
-  Dtype width_mult = 0.2;
-  layer_param.mutable_perspective_param()->set_height_mult(height_mult);
-  layer_param.mutable_perspective_param()->set_width_mult(width_mult);
+  Dtype slope_mult = 0.1;
+  Dtype intercept_mult = 0.2;
+  layer_param.mutable_perspective_param()->set_slope_mult(slope_mult);
+  layer_param.mutable_perspective_param()->set_intercept_mult(intercept_mult);
   PerspectiveLayer<Dtype> layer(layer_param);
   GradientChecker<Dtype> checker(1e-2, 1e-3);
   checker.CheckGradient(&layer, this->blob_bottom_vec_,
