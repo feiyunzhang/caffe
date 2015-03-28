@@ -71,7 +71,7 @@ void PerspectiveLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 template<typename Dtype>
 void PerspectiveLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom){
-  const Dtype* top_diff = top[0]->cpu_data();
+  const Dtype* top_diff = top[0]->cpu_diff();
   for (int n = 0; n < num_; n++) {
     const Dtype* slope_multipliers = slope_multiplier_.cpu_data();
     const Dtype* intercept_multipliers = intercept_multiplier_.cpu_data();

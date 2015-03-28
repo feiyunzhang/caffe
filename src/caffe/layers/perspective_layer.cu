@@ -24,7 +24,7 @@ template<typename Dtype>
 void PerspectiveLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom){
   for (int n = 0; n < num_; n++) {
-    const Dtype* top_diff = top[0]->gpu_data();
+    const Dtype* top_diff = top[0]->gpu_diff();
     const Dtype* slope_multipliers = slope_multiplier_.gpu_data();
     const Dtype* intercept_multipliers = intercept_multiplier_.gpu_data();
     Dtype slope_diff, intercept_diff;
