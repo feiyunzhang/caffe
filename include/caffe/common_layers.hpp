@@ -345,7 +345,6 @@ class MVNLayer : public Layer<Dtype> {
   Blob<Dtype> sum_multiplier_;
 };
 
-
 /**
  *  @brief Generating Perspective Maps -- a shading map controlled
  *         by input blobs "slop" and "intercept"
@@ -427,8 +426,11 @@ class ReductionLayer : public Layer<Dtype> {
   Blob<Dtype> sum_multiplier_;
 };
 
- /**
- * @brief Reshapes an input Blob.
+/*
+ * @brief Reshapes the input Blob into an arbitrary-sized output Blob.
+ *
+ * Note: similarly to FlattenLayer, this layer does not change the input values
+ * (see FlattenLayer, Blob::ShareData and Blob::ShareDiff).
  */
 template <typename Dtype>
 class ReshapeLayer : public Layer<Dtype> {
@@ -445,35 +447,21 @@ class ReshapeLayer : public Layer<Dtype> {
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
  protected:
-  /**
-   * @param bottom input Blob vector (length 1)
-   *   -# @f$ (D_1 \times D_2 \times ... \times D_m) @f$
-   *      the inputs
-   * @param top output Blob vector (length 1)
-   *   -# @f$ (d_1 \times d_2 \times ... \times d_n) @f$,
-   *      the outputs -- i.e., the (virtually) copied inputs.
-   *      The shape is specified by <code>reshape_param.shape()</code>, and the
-   *      product of the dimensions in the new shape must match that of the
-   *      input shape; i.e., @f$ d_1 d_2 ... d_n = D_1 D_2 ... D_m @f$.
-   */
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {}
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {}
-
-  /**
-   * @brief Computes the error gradient w.r.t. the concatenate inputs.
-   *
-   * @param top output Blob vector (length 1), providing the error gradient with
-   *        respect to the outputs
-   * @param propagate_down see Layer::Backward.
-   * @param bottom input Blob vector (length K), into which the top error
-   *        gradient is (virtually) copied
-   */
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {}
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {}
   virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {}
+
+  /// @brief vector of axes indices whose dimensions we'll copy from the bottom
+  vector<int> copy_axes_;
+  /// @brief the index of the axis whose dimension we infer, or -1 if none
+  int inferred_axis_;
+  /// @brief the product of the "constant" output dimensions
+  int constant_count_;
 };
 
 /**
