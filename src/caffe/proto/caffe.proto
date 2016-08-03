@@ -368,6 +368,7 @@ message LayerParameter {
   optional WindowDataParameter window_data_param = 129;
   optional VideoDataParameter video_data_param = 140;
   optional ROIPoolingParameter roi_pooling_param = 150;
+  optional ROIMaskPoolingParameter roi_mask_pooling_param = 171;
   optional ScaleParameter scale_param = 160;
   optional BiasParameter bias_param = 161;
   optional BatchReductionParameter batch_reduction_param = 162;
@@ -1043,6 +1044,19 @@ message ROIPoolingParameter {
   optional float spatial_scale = 3 [default = 1];
 }
 
+// Message that stores parameters used by ROIMaskPoolingLayer
+message ROIMaskPoolingParameter {
+  // Pad, kernel size, and stride are all given as a single value for equal
+  // dimensions in height and width or as Y, X pairs.
+  optional uint32 pooled_h = 1 [default = 0]; // The pooled output height
+  optional uint32 pooled_w = 2 [default = 0]; // The pooled output width
+  // Multiplicative spatial scale factor to translate ROI coords from their
+  // input scale to the scale used when pooling
+  optional float spatial_scale = 3 [default = 1];
+  optional int32 half_part = 4 [default = 0];
+  optional float roi_scale = 5 [default = 1];
+  optional float mask_scale = 6 [default = 0];
+}
 
 // DEPRECATED: use LayerParameter.
 message V1LayerParameter {
