@@ -1046,7 +1046,7 @@ void Net<Dtype>::MemoryOptimize() {
 
   // Forward pass, try to reuse blobs' data memory
   for (int i = 0; i < layers_.size(); ++i) {
-    // if (layers_[i]->layer_param().no_mem_opt()) continue;
+    if (layers_[i]->layer_param().no_mem_opt()) continue;
     const vector<Blob<Dtype>* >& layer_top = top_vecs_[i];
     const vector<Blob<Dtype>* >& layer_bottom = bottom_vecs_[i];
     LOG(INFO) << "layer " << i << " " << layer_names_[i];
@@ -1054,7 +1054,6 @@ void Net<Dtype>::MemoryOptimize() {
     for (int i_top = 0; i_top < layer_top.size(); ++i_top) {
       const string& top_name = blob_names_[top_id_vecs_[i][i_top]];
       int idx = FindSlot(slots, top_name + "_data");
-      if (idx == -1) idx = FindSlot(slots, top_name + "_data_hold");
       if (idx == -1) {
         // Detect share data conditions
         bool sharing_data = false;
@@ -1071,13 +1070,11 @@ void Net<Dtype>::MemoryOptimize() {
         }
         if (!sharing_data) {
           if (!layers_[i]->loss(i_top)) {
-            const string& key = (layers_[i]->layer_param().no_mem_opt()) ?
-              top_name + "_data_hold" : top_name + "_data";
-            idx = (int)AcquireSlot(slots, key, 1);
-            slot_index[key] = idx;
+            idx = (int)AcquireSlot(slots, top_name + "_data", 1);
+            slot_index[top_name + "_data"] = idx;
             LOG(INFO) << "top " << top_name << " acquires data slot " << idx;
           }
-        } else if (idx >= 0) {
+        } else {
           slots[idx].IncRef();
           slot_index[top_name + "_data"] = idx;
         }
@@ -1117,8 +1114,7 @@ void Net<Dtype>::MemoryOptimize() {
     for (int i_bottom = 0; i_bottom < layer_bottom.size(); ++i_bottom){
       const string& bottom_name = blob_names_[layer_bottom_idx[i_bottom]];
       int idx = FindSlot(slots, bottom_name + "_diff");
-      if (idx == -1) idx = FindSlot(slots, bottom_name + "_diff_hold");
-      // if (!(layers_[i]->layer_param().no_mem_opt())){
+      if (!(layers_[i]->layer_param().no_mem_opt())){
       if (idx == -1){
         //detect share diff conditions
         bool sharing_diff = false;
@@ -1130,10 +1126,8 @@ void Net<Dtype>::MemoryOptimize() {
           }
         }
         if (!sharing_diff) {
-          const string& key = (layers_[i]->layer_param().no_mem_opt()) ?
-            bottom_name + "_diff_hold" : bottom_name + "_diff";
-          idx = (int) AcquireSlot(slots, key, 1);
-          slot_index[key] = idx;
+          idx = (int) AcquireSlot(slots, bottom_name + "_diff", 1);
+          slot_index[bottom_name + "_diff"] = idx;
           LOG(INFO) << "acquired slot for new blob";
         }else{
           LOG(INFO) << "sharing diff using slot "<<idx;
@@ -1149,7 +1143,7 @@ void Net<Dtype>::MemoryOptimize() {
         // usually this means in-place operation
         slots[idx].IncRef();
       }
-      // }
+      }
       LOG(INFO)<<"bottom blob "<<i_bottom<<" name "
                <<bottom_name<<" slot id "<<idx;
     }
