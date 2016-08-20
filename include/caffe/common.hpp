@@ -170,6 +170,7 @@ class Caffe {
   static void SetDevice(const int device_id);
   // Prints the current GPU status.
   static void DeviceQuery();
+  static void SetParallel();
 
 #ifdef USE_MPI
   enum PARALLEL_MODE { NO, MPI };
