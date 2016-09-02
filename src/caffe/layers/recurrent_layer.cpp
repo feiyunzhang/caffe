@@ -146,7 +146,7 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   // is "owned" by the layer, rather than shared with another.
   this->blobs_.clear();
   for (int i = 0; i < unrolled_net_->params().size(); ++i) {
-    if (unrolled_net_->param_owners()[i] == -1) {
+    if (1) {// (unrolled_net_->param_owners()[i] == -1) {
       LOG(INFO) << "Adding parameter " << i << ": "
                 << unrolled_net_->param_display_names()[i];
       this->blobs_.push_back(unrolled_net_->params()[i]);
