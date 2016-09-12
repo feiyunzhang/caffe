@@ -44,7 +44,6 @@ class PythonLayer : public Layer<Dtype> {
     PyGILState_Release(state);
     MaybeStartPrefetchThread();
   }
-
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
     boost::lock_guard<boost::mutex> lock(mtx_);

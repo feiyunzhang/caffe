@@ -1,3 +1,8 @@
+#ifdef WITH_PYTHON_LAYER
+#include "boost/python.hpp"
+namespace bp = boost::python;
+#endif
+
 #include <glog/logging.h>
 
 #include <cstring>
