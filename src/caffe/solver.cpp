@@ -21,7 +21,7 @@ namespace caffe {
 
 template <typename Dtype>
 Solver<Dtype>::Solver(const SolverParameter& param)
-    : net_() {
+    : net_(){
   Init(param);
 }
 
@@ -51,6 +51,7 @@ void Solver<Dtype>::Init(const SolverParameter& param) {
   LOG(INFO) << "Solver scaffolding done.";
   iter_ = 0;
   current_step_ = 0;
+  smoothed_loss = 0;
 }
 
 template <typename Dtype>
@@ -173,8 +174,6 @@ void Solver<Dtype>::Step(int iters) {
   const int start_iter = iter_;
   const int stop_iter = iter_ + iters;
   int average_loss = this->param_.average_loss();
-  vector<Dtype> losses;
-  Dtype smoothed_loss = 0;
 
   while (iter_ < stop_iter) {
     // zero-init the params
@@ -215,13 +214,13 @@ void Solver<Dtype>::Step(int iters) {
     loss /= param_.iter_size();
     // average the loss across iterations for smoothed reporting
     if (losses.size() < average_loss) {
-      losses.push_back(loss);
+      losses.push(loss);
       int size = losses.size();
       smoothed_loss = (smoothed_loss * (size - 1) + loss) / size;
     } else {
-      int idx = (iter_ - start_iter) % average_loss;
-      smoothed_loss += (loss - losses[idx]) / average_loss;
-      losses[idx] = loss;
+      smoothed_loss += (loss - losses.front()) / average_loss;
+      losses.pop(); // remove oldest loss
+      losses.push(loss); // add newest loss
     }
     if (display) {
       LOG(INFO) << "Iteration " << iter_ << ", loss = " << smoothed_loss;
